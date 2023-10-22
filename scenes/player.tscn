@@ -1,0 +1,55 @@
+[gd_scene load_steps=4 format=3 uid="uid://c6qgipvj4nexo"]
+
+[ext_resource type="Texture2D" uid="uid://bs03wmh5sm8a5" path="res://assets/player.png" id="1_lw07n"]
+
+[sub_resource type="GDScript" id="GDScript_t4wlh"]
+script/source = "extends CharacterBody2D
+
+@onready var ray = $RayCast2D
+var grid_size = 8
+var inputs = {
+	'ui_up': Vector2.UP,
+	'ui_down': Vector2.DOWN,
+	'ui_left': Vector2.LEFT,
+	'ui_right': Vector2.RIGHT,
+}
+
+func _unhandled_input(event):
+	for dir in inputs.keys():
+		if event.is_action_pressed(dir):
+			move(dir)
+
+func move(dir):
+	var game = get_parent()
+	var vector_pos = inputs[dir] * grid_size
+	ray.target_position = vector_pos
+	ray.force_raycast_update()
+	if !ray.is_colliding():
+		position += vector_pos
+		game.moves += 1
+	else:
+		var collider = ray.get_collider()
+		if collider.is_in_group('box'):
+			if collider.move(dir):
+				position += vector_pos
+				game.moves += 1
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_r4yfq"]
+size = Vector2(8, 8)
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+script = SubResource("GDScript_t4wlh")
+
+[node name="Player" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = ExtResource("1_lw07n")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(4, 4)
+shape = SubResource("RectangleShape2D_r4yfq")
+
+[node name="RayCast2D" type="RayCast2D" parent="."]
+position = Vector2(4, 4)
+target_position = Vector2(0, 8)
